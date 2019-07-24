@@ -5,7 +5,7 @@
 
 | HTTP Method   | Endpoint                           | Description                                       |
 |:--------------|:-----------------------------------|:--------------------------------------------------|
-| GET           | /booking/reserved/:restaurantID    | Return available times for booking                |
+| GET           | /booking/reserved/:restaurantID    | Return unavailable times for booking              |
 | GET           | /booking/count/:restaurantID       | Return daily booking count                        |
 | POST          | /booking/:restaurantID             | Create a new reservation                          |
 | PUT           | /booking/:reservationID            | Update an existing reservation                    |
