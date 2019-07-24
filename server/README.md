@@ -1,4 +1,5 @@
-# Booking server
+# Booking
+> View available restaurant reservation times for a given date and party size. Create new reservations, and update or cancel existing bookings. 
 
 ## API Server Routes
 
@@ -11,6 +12,7 @@
 
 #### `GET /booking/reserved/:restaurantID?year=YEAR&month=MONTH&day=DAY&party=SIZE&time=TIME`
 **Parameters**: Restaurant ID
+
 **Query String**:
     1) Date requested (YYYY-MM-DD)
     2) Party size
@@ -21,6 +23,7 @@ Given a specific restaurant ID, a specific date, and a specific party size, this
 
 #### `POST /booking/:restaurantID?year=YEAR&month=MONTH&day=DAY&party=SIZE&time=TIME`
 **Parameters**: Restaurant ID
+
 **Query String**:
     1) Date requested (YYYY-MM-DD)
     2) Party size
@@ -31,6 +34,7 @@ This assumes that the date is available for booking (the date should be held)
 
 #### `PUT /booking/:reservationID?year=YEAR&month=MONTH&day=DAY&party=SIZE&time=TIME`
 **Parameters**: Reservation ID
+
 **Query String**:
     1) New date requested (YYYY-MM-DD)
     2) New party size 
