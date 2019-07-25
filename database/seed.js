@@ -6,9 +6,14 @@ const faker = require('faker');
 const os = require('os');
 const moment = require('moment');
 
-const intervalOptions = [15, 30, 45, 60];
-const openOptions = ['07:00', '08:00', '09:00', '10:00'];
-const closeOptions = ['21:00', '22:00', '23:00', '24:00'];
+const intervalOptions = [15, 30, 60];
+const minuteOptions = {
+  '15': [15, 30, 45, 0],
+  '30': [30, 0],
+  '60': 0,
+};
+const openOptions = [7, 8, 9, 10];
+const closeOptions = [21, 22, 23, 24];
 const tableOptions = [2, 4, 6, 8, 10, 20];
 const tableNumberOptions = [3, 5, 7, 9, 11];
 
@@ -16,90 +21,76 @@ const generateRandom = function (options) {
   return Math.floor(Math.random() * options.length);
 };
 
-const createRestaurant = function () {
-  const restaurantName = `${faker.lorem.word()} ${faker.lorem.word()}`;
-  const openTime = openOptions[Math.floor(Math.random() * openOptions.length)];
-  const closeTime = closeOptions[Math.floor(Math.random() * closeOptions.length)];
-  const intervalTime = intervalOptions[Math.floor(Math.random() * intervalOptions.length)];
-
-  const row = `${restaurantName},${openTime},${closeTime},${intervalTime}\n`;
-  const output = [];
-  output.push(row);
-  return output.join(os.EOL);
+const generateMinute = function (interval) {
+  const options = minuteOptions[interval];
+  return options[generateRandom(options)];
 };
 
-const createReservation = function (restaurant) {
+const createRestaurant = function () {
+  const restaurantName = `${faker.lorem.word()} ${faker.lorem.word()}`;
+  const openTime = openOptions[generateRandom(openOptions)];
+  const closeTime = closeOptions[generateRandom(closeOptions)];
+  const intervalTime = intervalOptions[generateRandom(intervalOptions)];
+
+  const row = `${restaurantName},${openTime}:00,${closeTime}:00,${intervalTime}\n`;
+  const output = [];
+  output.push(row);
+  return [output.join(os.EOL), openTime, closeTime, intervalTime];
+};
+
+const createReservation = function (restaurantID, openTime, closeTime, intervalTime) {
   const start = moment('2019-08-01');
   const stop = start.clone().add(3, 'months');
   let output = [];
 
   for (let i = moment(start); i.isBefore(stop); i.add(1, 'days')) {
     const partySize = faker.random.number({ min: 1, max: 20 });
-    const tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1); 
+    const tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
     const date = i.format('YYYY-MM-DD');
-    const hour = faker.random.number({ min: 8, max: 23 });
-    const minute = ['00', '15', '30', '45'][Math.floor(Math.random()* 4)];
+    const hour = faker.random.number({ min: openTime, max: closeTime });
+    const minute = generateMinute(intervalTime);
     const timeStamp = `${date} ${hour}:${minute}`;
 
-    const row = `${restaurant + 1},${timeStamp},${partySize},${tableSize}`;
+    const row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
     output.push(row);
   }
   return output.join('\n') + '\n';
 };
 
+
 const generateRestaurants = () => {
-  const writer = fs.createWriteStream('rawdata/restaurants.csv');
-  console.log('generate restaurants: time before seed', moment().format('LTS'));
+  const restaurantsWriter = fs.createWriteStream('rawdata/restaurants.csv');
+  const reservationsWriter = fs.createWriteStream('rawdata/reservations.csv');
+  console.log('generate restaurants/reservations: time before seed', moment().format('LTS'));
 
-  let i = 3000000;
+  let i = 1;
 
   function write() {
-    let ok = true;
+    let restaurantOk = true;
+    let reservationOk = true;
     do {
       i--;
       if (i === 0) {
-        const data = createRestaurant();
-        writer.write(data, 'utf8');
-        console.log('generate restaurants: time after seed', moment().format('LTS'));
+        const restaurantData = createRestaurant();
+        restaurantsWriter.write(restaurantData[0], 'utf8');
+        const reservationsData = createReservation(i + 1, restaurantData[1], restaurantData[2], restaurantData[3]);
+        reservationsWriter.write(reservationsData, 'utf8');
+        console.log('generate restaurants/reservations: time after seed', moment().format('LTS'));
       } else {
         const data = createRestaurant();
-        ok = writer.write(data, 'utf8');
+        restaurantOk = restaurantsWriter.write(data, 'utf8');
+        reservationOk = reservationsWriter.write(data, 'utf8');
       }
-    } while (i > 0 && ok);
+    } while (i > 0 && restaurantOk && reservationOk);
     if (i > 0) {
-      writer.once('drain', write);
+      restaurantsWriter.once('drain', write);
+      reservationsWriter.once('drain', write);
     }
   }
   write();
 };
 
-const generateReservations = function() {
-  const writer = fs.createWriteStream('rawdata/reservations.csv');
-  console.log('generate reservations: time before seed', moment().format('LTS'));
-
-  let i = 1000000;
-
-  function write() {
-    let ok = true;
-    do {
-      i--;
-      if (i === 0) {
-        const data = createReservation(i);
-        writer.write(data, 'utf8');
-        console.log('generate reservations: time after seed', moment().format('LTS'));        
-      } else {
-        const data = createReservation(i);
-        ok = writer.write(data, 'utf8');
-      }
-    } while (i > 0 && ok);
-    if (i > 0) {
-      writer.once('drain', write);
-    }
-  }
-  write();
-};
-
-
+generateRestaurants();
 
 const createSeating = function (restaurant) {
   let output = [];
