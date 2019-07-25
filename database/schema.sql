@@ -9,7 +9,6 @@ CREATE TABLE restaurants (
   restaurant_name VARCHAR,
   open_time TIME,
   close_time TIME,
-  close_date SMALLINT,
   time_interval SMALLINT
 );
 
