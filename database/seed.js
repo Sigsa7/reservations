@@ -72,3 +72,29 @@ const generateRestaurants = () => {
   }
   write();
 };
+
+const generateReservations = function() {
+  const writer = fs.createWriteStream('rawdata/reservations.csv');
+  console.log('generate reservations: time before seed', moment().format('LTS'));
+
+  let i = 1000000;
+
+  function write() {
+    let ok = true;
+    do {
+      i--;
+      if (i === 0) {
+        const data = createReservation(i);
+        writer.write(data, 'utf8');
+        console.log('generate reservations: time after seed', moment().format('LTS'));        
+      } else {
+        const data = createReservation(i);
+        ok = writer.write(data, 'utf8');
+      }
+    } while (i > 0 && ok);
+    if (i > 0) {
+      writer.once('drain', write);
+    }
+  }
+  write();
+};
