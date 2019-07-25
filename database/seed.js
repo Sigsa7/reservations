@@ -1,102 +1,54 @@
-/**
- * Seed the database
- */
-const moment = require('moment');
+/* eslint-disable no-plusplus */
+/* eslint-disable func-names */
+const fs = require('fs');
+const faker = require('faker');
+const os = require('os');
 
-const { Reservation } = require('./reservation');
-const { Restaurant } = require('./restaurant');
-const { db } = require('./index');
+const intervalOptions = [15, 30, 45, 60];
+const openOptions = ['07:00', '08:00', '09:00', '10:00'];
+const closeOptions = ['21:00', '22:00', '23:00', '24:00'];
+const closeDateOptions = [0, 1, 2, 3, 4, 5, 6];
 
-/**
- * From: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
- * The maximum is exclusive and the minimum is inclusive
- * @param {number} minimum
- * @param {number} maximum
- */
-function getRandomInt(minimum, maximum) {
-  const min = Math.ceil(minimum);
-  const max = Math.floor(maximum);
+const createRestaurant = function () {
+  const restaurantName = `${faker.lorem.word()} ${faker.lorem.word()}`;
+  const openAssign = Math.floor(Math.random() * openOptions.length);
+  const closeAssign = Math.floor(Math.random() * closeOptions.length);
+  const intervalAssign = Math.floor(Math.random() * intervalOptions.length);
+  const closeDateAssign = Math.floor(Math.random() * closeDateOptions.length);
 
-  return Math.floor(Math.random() * (max - min)) + min;
-}
+  const openTime = openOptions[openAssign];
+  const closeTime = closeOptions[closeAssign];
+  const intervalTime = intervalOptions[intervalAssign];
+  const closeDate = closeDateOptions[closeDateAssign];
 
-/**
- *
- */
-function seedReservations() {
-  // hardcoded open and close times to choose from
-  const openTimes = [
-    { hour: 8, minute: 30 },
-    { hour: 9, minute: 0 },
-    { hour: 9, minute: 30 },
-    { hour: 10, minute: 0 },
-    { hour: 10, minute: 30 },
-    { hour: 11, minute: 0 },
-  ];
-  const closeTimes = [
-    { hour: 18, minute: 30 },
-    { hour: 19, minute: 0 },
-    { hour: 19, minute: 30 },
-    { hour: 20, minute: 0 },
-    { hour: 20, minute: 30 },
-    { hour: 21, minute: 0 },
-  ];
-  // Time interval restaurant expects between bookings
-  const timeIntervals = [15, 30, 45, 60];
+  const row = `${restaurantName},${openTime},${closeTime},${closeDate},${intervalTime}\n`;
+  const output = [];
+  output.push(row);
+  return output.join(os.EOL);
+};
 
-  // Other useful constants
-  const minSeating = 15;
-  const maxSeating = 50;
-  const minPartySize = 4;
-  const maxPartySize = 10;
+const generateRestaurants = () => {
+  const writer = fs.createWriteStream('restaurants.csv');
+  let i = 10000000;
 
-  // create 100 restaurants and 5 to 55 reservations per restaurant
-  const restaurants = [];
-  const reservations = [];
-
-  for (let i = 0; i < 100; i += 1) {
-    const newRestaurant = {
-      _id: i,
-      time_intervals: timeIntervals[getRandomInt(0, timeIntervals.length)],
-      max_seating: getRandomInt(minSeating, maxSeating + 1), // +1 because of getRandomInt
-      max_party_size: getRandomInt(minPartySize, maxPartySize + 1), // +1 because of getRandomInt
-      open_time: openTimes[getRandomInt(0, openTimes.length)],
-      close_time: closeTimes[getRandomInt(0, closeTimes.length)],
-      max_time_range: getRandomInt(7, 365),
-    };
-    restaurants.push(newRestaurant);
-
-    const numReservations = getRandomInt(5, 55);
-
-    for (let j = 0; j < numReservations; j += 1) {
-      // use Moment.js to create valid booking time
-      const hourOffset = getRandomInt(0, newRestaurant.close_time - newRestaurant.open_time);
-      const minuteOffset = getRandomInt(0, 60);
-      const randomTime = moment(newRestaurant.restaurant_open_time)
-        .add(hourOffset, 'hour')
-        .add(minuteOffset, 'minute');
-
-      reservations.push({
-        booking_time: randomTime,
-        party_qty: getRandomInt(1, newRestaurant.max_party_size),
-        restaurant_id: i,
-      });
+  function write() {
+    let ok = true;
+    do {
+      i--;
+      if (i === 0) {
+        const data = createRestaurant();
+        writer.write(data, 'utf8');
+      } else {
+        const data = createRestaurant();
+        ok = writer.write(data, 'utf8');
+      }
+    } while (i > 0 && ok);
+    if (i > 0) {
+      writer.once('drain', write);
     }
   }
 
-  Reservation.insertMany(reservations, function (err) {
-    if (err) {
-      console.log(err);
-      db.close();
-    } else {
-      Restaurant.insertMany(restaurants, function (err) {
-        if (err) {
-          console.log(err);
-        }
-        db.close();
-      })
-    }
-  });
-}
+  write();
+};
 
-seedReservations();
+generateRestaurants();
