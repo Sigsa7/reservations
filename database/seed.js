@@ -10,10 +10,10 @@ const intervalOptions = [15, 30, 60];
 const minuteOptions = {
   '15': [15, 30, 45, 0],
   '30': [30, 0],
-  '60': 0,
+  '60': [0],
 };
 const openOptions = [7, 8, 9, 10];
-const closeOptions = [21, 22, 23, 24];
+const closeOptions = [20, 21, 22, 23];
 const tableOptions = [2, 4, 6, 8, 10, 20];
 const tableNumberOptions = [3, 5, 7, 9, 11];
 
@@ -57,17 +57,15 @@ const createReservation = function (restaurantID, openTime, closeTime, intervalT
   return output.join('\n') + '\n';
 };
 
-
 const generateRestaurants = () => {
   const restaurantsWriter = fs.createWriteStream('rawdata/restaurants.csv');
   const reservationsWriter = fs.createWriteStream('rawdata/reservations.csv');
   console.log('generate restaurants/reservations: time before seed', moment().format('LTS'));
 
-  let i = 1;
+  let i = 3000000;
 
   function write() {
-    let restaurantOk = true;
-    let reservationOk = true;
+    let ok = true;
     do {
       i--;
       if (i === 0) {
@@ -77,20 +75,18 @@ const generateRestaurants = () => {
         reservationsWriter.write(reservationsData, 'utf8');
         console.log('generate restaurants/reservations: time after seed', moment().format('LTS'));
       } else {
-        const data = createRestaurant();
-        restaurantOk = restaurantsWriter.write(data, 'utf8');
-        reservationOk = reservationsWriter.write(data, 'utf8');
+        const restaurantData = createRestaurant();
+        restaurantsWriter.write(restaurantData[0], 'utf8');
+        const reservationsData = createReservation(i + 1, restaurantData[1], restaurantData[2], restaurantData[3]);
+        ok = reservationsWriter.write(reservationsData, 'utf8');
       }
-    } while (i > 0 && restaurantOk && reservationOk);
+    } while (i > 0 && ok);
     if (i > 0) {
-      restaurantsWriter.once('drain', write);
       reservationsWriter.once('drain', write);
     }
   }
   write();
 };
-
-generateRestaurants();
 
 const createSeating = function (restaurant) {
   let output = [];
@@ -127,3 +123,5 @@ const generateSeating = function () {
   }
   write();
 };
+
+generateRestaurants();
