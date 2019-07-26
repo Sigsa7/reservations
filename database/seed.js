@@ -39,33 +39,48 @@ const createRestaurant = function () {
 };
 
 const createReservation = function (restaurantID, openTime, closeTime, intervalTime) {
+  let output = [];
   const start = moment('2019-08-01');
   const stop = start.clone().add(3, 'months');
-  let output = [];
 
-  for (let i = moment(start); i.isBefore(stop); i.add(2, 'days')) {
-    let partySize = faker.random.number({ min: 1, max: 20 });
-    let tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
-    const date = i.format('YYYY-MM-DD');
-    let hour = faker.random.number({ min: openTime, max: closeTime });
-    let minute = generateMinute(intervalTime);
-    let timeStamp = `${date} ${hour}:${minute}`;
-    let row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
-    output.push(row);
-    hour = faker.random.number({ min: openTime, max: closeTime });
-    minute = generateMinute(intervalTime);
-    timeStamp = `${date} ${hour}:${minute}`;
-    partySize = faker.random.number({ min: 1, max: 20 });
-    tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
-    row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
-    output.push(row);
-    hour = faker.random.number({ min: openTime, max: closeTime });
-    minute = generateMinute(intervalTime);
-    timeStamp = `${date} ${hour}:${minute}`;
-    partySize = faker.random.number({ min: 1, max: 20 });
-    tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
-    row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
-    output.push(row);
+  if (restaurantID < 2100000) {
+    // these restaurants have only a few bookings each month
+    for (let j = moment(start); j.isBefore(stop); j.add(15, 'days')) {
+      const partySize = faker.random.number({ min: 1, max: 20 });
+      const tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
+      const date = j.format('YYYY-MM-DD');
+      const hour = faker.random.number({ min: openTime, max: closeTime });
+      const minute = generateMinute(intervalTime);
+      const timeStamp = `${date} ${hour}:${minute}`;
+      const row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
+      output.push(row);
+    }
+  } else {
+    // only 30% of restaurants have many bookings a month
+    for (let i = moment(start); i.isBefore(stop); i.add(2, 'days')) {
+      let partySize = faker.random.number({ min: 1, max: 20 });
+      let tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
+      const date = i.format('YYYY-MM-DD');
+      let hour = faker.random.number({ min: openTime, max: closeTime });
+      let minute = generateMinute(intervalTime);
+      let timeStamp = `${date} ${hour}:${minute}`;
+      let row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
+      output.push(row);
+      hour = faker.random.number({ min: openTime, max: closeTime });
+      minute = generateMinute(intervalTime);
+      timeStamp = `${date} ${hour}:${minute}`;
+      partySize = faker.random.number({ min: 1, max: 20 });
+      tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
+      row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
+      output.push(row);
+      hour = faker.random.number({ min: openTime, max: closeTime });
+      minute = generateMinute(intervalTime);
+      timeStamp = `${date} ${hour}:${minute}`;
+      partySize = faker.random.number({ min: 1, max: 20 });
+      tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
+      row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
+      output.push(row);
+    }
   }
   return output.join('\n') + '\n';
 };
@@ -87,6 +102,10 @@ const generateRestaurants = () => {
         const reservationsData = createReservation(i + 1, restaurantData[1], restaurantData[2], restaurantData[3]);
         reservationsWriter.write(reservationsData, 'utf8');
         console.log('generate restaurants/reservations: time after seed', moment().format('LTS'));
+      } else if (i % 100 === 0) {
+        // these restaurants have no bookings
+        const restaurantData = createRestaurant();
+        restaurantsWriter.write(restaurantData[0], 'utf8');
       } else {
         const restaurantData = createRestaurant();
         restaurantsWriter.write(restaurantData[0], 'utf8');
@@ -102,11 +121,20 @@ const generateRestaurants = () => {
 };
 
 const createSeating = function (restaurant) {
-  let output = [];
-  for (var i = 0; i < tableOptions.length; i++) {
-    let assign = generateRandom(tableNumberOptions);
-    let row = `${restaurant + 1},${tableOptions[i]},${tableNumberOptions[assign]}`;
-    output.push(row);
+  const output = [];
+  // some restaurants are very small and have limited seating options
+  if (restaurant % 100 === 0) {
+    for (let i = 0; i < 3; i++) {
+      const assign = faker.random.number({ min: 0, max: 3 });
+      const row = `${restaurant + 1},${tableOptions[i]},${tableNumberOptions[assign]}`;
+      output.push(row);
+    }
+  } else {
+    for (let j = 0; j < tableOptions.length; j++) {
+      const assign = generateRandom(tableNumberOptions);
+      const row = `${restaurant + 1},${tableOptions[j]},${tableNumberOptions[assign]}`;
+      output.push(row);
+    }
   }
   return output.join('\n') + '\n';
 };
