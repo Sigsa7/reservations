@@ -8,9 +8,9 @@ const moment = require('moment');
 
 const intervalOptions = [15, 30, 60];
 const minuteOptions = {
-  '15': [15, 30, 45, 0],
-  '30': [30, 0],
-  '60': [0],
+  15: [15, 30, 45, 0],
+  30: [30, 0],
+  60: [0],
 };
 const openOptions = [7, 8, 9, 10];
 const closeOptions = [20, 21, 22, 23];
@@ -43,15 +43,28 @@ const createReservation = function (restaurantID, openTime, closeTime, intervalT
   const stop = start.clone().add(3, 'months');
   let output = [];
 
-  for (let i = moment(start); i.isBefore(stop); i.add(1, 'days')) {
-    const partySize = faker.random.number({ min: 1, max: 20 });
-    const tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
+  for (let i = moment(start); i.isBefore(stop); i.add(2, 'days')) {
+    let partySize = faker.random.number({ min: 1, max: 20 });
+    let tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
     const date = i.format('YYYY-MM-DD');
-    const hour = faker.random.number({ min: openTime, max: closeTime });
-    const minute = generateMinute(intervalTime);
-    const timeStamp = `${date} ${hour}:${minute}`;
-
-    const row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
+    let hour = faker.random.number({ min: openTime, max: closeTime });
+    let minute = generateMinute(intervalTime);
+    let timeStamp = `${date} ${hour}:${minute}`;
+    let row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
+    output.push(row);
+    hour = faker.random.number({ min: openTime, max: closeTime });
+    minute = generateMinute(intervalTime);
+    timeStamp = `${date} ${hour}:${minute}`;
+    partySize = faker.random.number({ min: 1, max: 20 });
+    tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
+    row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
+    output.push(row);
+    hour = faker.random.number({ min: openTime, max: closeTime });
+    minute = generateMinute(intervalTime);
+    timeStamp = `${date} ${hour}:${minute}`;
+    partySize = faker.random.number({ min: 1, max: 20 });
+    tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
+    row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
     output.push(row);
   }
   return output.join('\n') + '\n';
@@ -125,3 +138,4 @@ const generateSeating = function () {
 };
 
 generateRestaurants();
+generateSeating();
