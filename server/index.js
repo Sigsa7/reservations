@@ -37,7 +37,7 @@ app.post('/booking/:restaurantID', (req, res) => {
   const { dateTime, partySize } = req.body;
   const tableSize = partySize > 10 ? 20 : (partySize % 2 === 0 ? partySize : partySize + 1);
   const createAt = moment().format('YYYY-MM-DD');
-  
+
   pool.query('INSERT INTO reservations (restaurant_id, date_time, party_size, table_size, create_at) VALUES($1, $2, $3, $4, $5)',
     [restaurantID, dateTime, partySize, tableSize, createAt], (err, data) => {
       if (err) {
@@ -48,7 +48,17 @@ app.post('/booking/:restaurantID', (req, res) => {
 });
 
 app.put('/booking/:reservationID', (req, res) => {
-  // update an existing reservation
+  const { reservationID } = req.params;
+  const { dateTime, partySize } = req.body;
+  const tableSize = partySize > 10 ? 20 : (partySize % 2 === 0 ? partySize : partySize + 1);
+
+  pool.query('UPDATE reservations SET date_time = $1, party_size = $2, table_size = $3 WHERE id = $4',
+    [dateTime, partySize, tableSize, reservationID], (err, data) => {
+      if (err) {
+        throw err;
+      }
+      res.send(data);
+    });
 });
 
 app.delete('/booking/:reservationID', (req, res) => {

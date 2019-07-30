@@ -74,10 +74,10 @@ class App extends React.Component {
         console.log(err);
       });
 
-    axios.get(`/${restaurantId}/reservations/count`)
+    axios.get(`/booking/count/${restaurantId}`)
       .then((response) => {
         this.setState({
-          bookingsToday: response.data.bookings_count,
+          bookingsToday: response.count,
         });
       });
   }
