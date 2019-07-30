@@ -54,15 +54,18 @@ app.put('/booking/:reservationID', (req, res) => {
 
   pool.query('UPDATE reservations SET date_time = $1, party_size = $2, table_size = $3 WHERE id = $4',
     [dateTime, partySize, tableSize, reservationID], (err, data) => {
-      if (err) {
-        throw err;
-      }
-      res.send(data);
+      if (err) throw err;
+      res.sendStatus(200);
     });
 });
 
 app.delete('/booking/:reservationID', (req, res) => {
-  // delete an existing reservation
+  const { reservationID } = req.params;
+
+  pool.query('DELETE FROM reservations where id = $1', [reservationID], (err, data) => {
+    if (err) throw err;
+    res.sendStatus(200);
+  });
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
