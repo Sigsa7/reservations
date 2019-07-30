@@ -8,7 +8,6 @@ const os = require('os');
 const moment = require('moment');
 
 console.log(Uuid.random());
-console.log(Uuid.random());
 
 
 let reservationID = 0;
