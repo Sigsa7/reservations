@@ -1,16 +1,21 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-plusplus */
 /* eslint-disable func-names */
+const Uuid = require('cassandra-driver').types.Uuid;
 const fs = require('fs');
 const faker = require('faker');
 const os = require('os');
 const moment = require('moment');
 
+console.log(Uuid.random());
+
+
+let reservationID = 0;
 const intervalOptions = [15, 30, 60];
 const minuteOptions = {
-  15: [15, 30, 45, 0],
-  30: [30, 0],
-  60: [0],
+  15: ['15', '30', '45', '00'],
+  30: ['30', '00'],
+  60: ['00'],
 };
 const openOptions = [7, 8, 9, 10];
 const closeOptions = [20, 21, 22, 23];
@@ -26,24 +31,24 @@ const generateMinute = function (interval) {
   return options[generateRandom(options)];
 };
 
-const createRestaurant = function () {
+const createRestaurant = function (restaurantID) {
   const restaurantName = `${faker.lorem.word()} ${faker.lorem.word()}`;
   const openTime = openOptions[generateRandom(openOptions)];
   const closeTime = closeOptions[generateRandom(closeOptions)];
   const intervalTime = intervalOptions[generateRandom(intervalOptions)];
 
-  const row = `${restaurantName},${openTime}:00,${closeTime}:00,${intervalTime}\n`;
+  const row = `${restaurantID},${restaurantName},${openTime},${closeTime},${intervalTime}\n`;
   const output = [];
   output.push(row);
   return [output.join(os.EOL), openTime, closeTime, intervalTime];
 };
 
-const createSeating = function (restaurant) {
+const createSeating = function (restaurant, number) {
   const output = [];
   // some restaurants are very small and have limited seating options
   let largestTable;
   let smallestTable;
-  if (restaurant % 100 === 0) {
+  if (number % 100 === 0) {
     for (let i = 0; i < 3; i++) {
       const assign = faker.random.number({ min: 0, max: 3 });
       largestTable = largestTable > tableOptions[i] ? largestTable : tableOptions[i];
@@ -64,12 +69,12 @@ const createSeating = function (restaurant) {
 };
 
 
-const createReservation = function (restaurantID, openTime, closeTime, intervalTime, largestTable, smallestTable) {
+const createReservation = function (restaurantID, openTime, closeTime, intervalTime, largestTable, number) {
   let output = [];
-  const start = moment('2019-08-01');
+  const start = moment();
   const stop = start.clone().add(3, 'months');
 
-  if (restaurantID < 800000) {
+  if (number < 800000) {
     // these restaurants have only a few bookings each month
     for (let j = moment(start); j.isBefore(stop); j.add(7, 'days')) {
       let partySize = faker.random.number({ min: 1, max: largestTable });
@@ -77,16 +82,20 @@ const createReservation = function (restaurantID, openTime, closeTime, intervalT
       const date = j.format('YYYY-MM-DD');
       let hour = faker.random.number({ min: openTime, max: closeTime });
       let minute = generateMinute(intervalTime);
-      let timeStamp = `${date} ${hour}:${minute}`;
-      let row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
+      let timeStamp = `${date} ${hour}:${minute}:00.000-0800`;
+      let createAt = moment().subtract('days', faker.random.number({ min: 1, max: 15 })).format('YYYY-MM-DD');
+      reservationID = Uuid.random();
+      let row = `${reservationID},${restaurantID},${timeStamp},${partySize},${tableSize},${createAt}`;
       output.push(row);
 
       hour = faker.random.number({ min: openTime, max: closeTime });
       minute = generateMinute(intervalTime);
-      timeStamp = `${date} ${hour}:${minute}`;
+      timeStamp = `${date} ${hour}:${minute}:00.000-0800`;
       partySize = faker.random.number({ min: 1, max: largestTable });
       tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
-      row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
+      createAt = moment().subtract('days', faker.random.number({ min: 1, max: 15 })).format('YYYY-MM-DD');
+      reservationID = Uuid.random();
+      row = `${reservationID},${restaurantID},${timeStamp},${partySize},${tableSize},${createAt}`;
       output.push(row);
     }
   } else {
@@ -97,32 +106,40 @@ const createReservation = function (restaurantID, openTime, closeTime, intervalT
       const date = i.format('YYYY-MM-DD');
       let hour = faker.random.number({ min: openTime, max: closeTime });
       let minute = generateMinute(intervalTime);
-      let timeStamp = `${date} ${hour}:${minute}`;
-      let row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
+      let timeStamp = `${date} ${hour}:${minute}:00.000-0800`;
+      let createAt = moment().subtract('days', faker.random.number({ min: 1, max: 15 })).format('YYYY-MM-DD');
+      reservationID = Uuid.random();
+      let row = `${reservationID},${restaurantID},${timeStamp},${partySize},${tableSize},${createAt}`;
       output.push(row);
 
       hour = faker.random.number({ min: openTime, max: closeTime });
       minute = generateMinute(intervalTime);
-      timeStamp = `${date} ${hour}:${minute}`;
+      timeStamp = `${date} ${hour}:${minute}:00.000-0800`;
       partySize = faker.random.number({ min: 1, max: largestTable });
       tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
-      row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
+      createAt = moment().subtract('days', faker.random.number({ min: 1, max: 15 })).format('YYYY-MM-DD');
+      reservationID = Uuid.random();
+      row = `${reservationID},${restaurantID},${timeStamp},${partySize},${tableSize},${createAt}`;
       output.push(row);
 
       hour = faker.random.number({ min: openTime, max: closeTime });
       minute = generateMinute(intervalTime);
-      timeStamp = `${date} ${hour}:${minute}`;
+      timeStamp = `${date} ${hour}:${minute}:00.000-0800`;
       partySize = faker.random.number({ min: 1, max: largestTable });
       tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
-      row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
+      createAt = moment().subtract('days', faker.random.number({ min: 1, max: 15 })).format('YYYY-MM-DD');
+      reservationID = Uuid.random();
+      row = `${reservationID},${restaurantID},${timeStamp},${partySize},${tableSize},${createAt}`;
       output.push(row);
 
       hour = faker.random.number({ min: openTime, max: closeTime });
       minute = generateMinute(intervalTime);
-      timeStamp = `${date} ${hour}:${minute}`;
+      timeStamp = `${date} ${hour}:${minute}:00.000-0800`;
       partySize = faker.random.number({ min: 1, max: largestTable });
       tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
-      row = `${restaurantID},${timeStamp},${partySize},${tableSize}`;
+      createAt = moment().subtract('days', faker.random.number({ min: 1, max: 15 })).format('YYYY-MM-DD');
+      reservationID = Uuid.random();
+      row = `${reservationID},${restaurantID},${timeStamp},${partySize},${tableSize},${createAt}`;
       output.push(row);
     }
   }
@@ -130,44 +147,51 @@ const createReservation = function (restaurantID, openTime, closeTime, intervalT
 };
 
 const generateData = () => {
-  const restaurantsWriter = fs.createWriteStream('rawdata/restaurants.csv');
-  const reservationsWriter = fs.createWriteStream('rawdata/reservations.csv');
-  const seatingWriter = fs.createWriteStream('rawdata/seating.csv');
+  const restaurantsWriter = fs.createWriteStream('cdata/testnewrestaurants.csv');
+  const reservationsWriter = fs.createWriteStream('cdata/testnewreservations.csv');
+  const seatingWriter = fs.createWriteStream('cdata/testnewseating.csv');
+
 
   console.log('generate restaurants/reservations: time before seed', moment().format('LTS'));
 
-  let i = 2000000;
+  let i = 1;
 
   function write() {
     let ok = true;
     do {
       i--;
       if (i === 0) {
-        const restaurantData = createRestaurant();
+        const restID = Uuid.random();
+        const restaurantData = createRestaurant(restID);
         restaurantsWriter.write(restaurantData[0], 'utf8');
 
-        const seatingData = createSeating(i + 1);
+        const seatingData = createSeating(restID, i);
         seatingWriter.write(seatingData[0], 'utf8');
         
-        const reservationsData = createReservation(i + 1, restaurantData[1], restaurantData[2], restaurantData[3], seatingData[1], seatingData[2]);
+        const reservationsData = createReservation(restID, restaurantData[1], restaurantData[2], restaurantData[3], seatingData[1], i);
         reservationsWriter.write(reservationsData, 'utf8');
+
 
         console.log('generate restaurants/reservations: time after seed', moment().format('LTS'));
       } else if (i % 10000 === 0) {
         // these restaurants have no bookings
-        const restaurantData = createRestaurant();
+        const restID = Uuid.random();
+
+        const restaurantData = createRestaurant(restID);
         restaurantsWriter.write(restaurantData[0], 'utf8');
 
-        const seatingData = createSeating(i + 1);
+        const seatingData = createSeating(restID, i);
         seatingWriter.write(seatingData[0], 'utf8');
       } else {
-        const restaurantData = createRestaurant();
+        const restID = Uuid.random();
+
+        const restaurantData = createRestaurant(restID);
         restaurantsWriter.write(restaurantData[0], 'utf8');
 
-        const seatingData = createSeating(i + 1);
+        const seatingData = createSeating(restID, i);
         seatingWriter.write(seatingData[0], 'utf8');
 
-        const reservationsData = createReservation(i + 1, restaurantData[1], restaurantData[2], restaurantData[3], seatingData[1], seatingData[2]);
+        const reservationsData = createReservation(restID, restaurantData[1], restaurantData[2], restaurantData[3], seatingData[1], i);
         ok = reservationsWriter.write(reservationsData, 'utf8');
       }
     } while (i > 0 && ok);
@@ -178,4 +202,6 @@ const generateData = () => {
   write();
 };
 
-generateData();
+// generateData();
+
+

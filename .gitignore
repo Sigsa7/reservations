@@ -2,3 +2,7 @@ node_modules
 package-lock.json
 coverage
 data
+rawdata
+prior
+cdata
+old_index.js

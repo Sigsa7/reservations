@@ -9,13 +9,12 @@ CREATE TABLE restaurants (
   restaurant_name VARCHAR,
   open_time TIME,
   close_time TIME,
-  close_date SMALLINT,
   time_interval SMALLINT
 );
 
 CREATE TABLE reservations (
   id serial PRIMARY KEY,
-  restaurant_id INTEGER REFERENCES restaurants(id),
+  restaurant_id INTEGER,
   date_time TIMESTAMPTZ,
   party_size SMALLINT,
   table_size SMALLINT
@@ -23,7 +22,9 @@ CREATE TABLE reservations (
 
 CREATE TABLE seating (
   id serial PRIMARY KEY,
-  restaurant_id INTEGER REFERENCES restaurants(id),
+  restaurant_id INTEGER,
   table_size SMALLINT,
   number_of_tables SMALLINT
 );
+
+/* foreign keys are adeded to reservations and seating tables after data is loaded into postgres */
