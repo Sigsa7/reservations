@@ -69,7 +69,7 @@ const createReservation = function (restaurantID, openTime, closeTime, intervalT
   const start = moment('2019-08-01');
   const stop = start.clone().add(3, 'months');
 
-  if (restaurantID < 2100000) {
+  if (restaurantID < 800000) {
     // these restaurants have only a few bookings each month
     for (let j = moment(start); j.isBefore(stop); j.add(7, 'days')) {
       let partySize = faker.random.number({ min: 1, max: largestTable });
@@ -91,7 +91,7 @@ const createReservation = function (restaurantID, openTime, closeTime, intervalT
     }
   } else {
     // only 30% of restaurants have many bookings a month
-    for (let i = moment(start); i.isBefore(stop); i.add(2, 'days')) {
+    for (let i = moment(start); i.isBefore(stop); i.add(5, 'days')) {
       let partySize = faker.random.number({ min: 1, max: largestTable });
       let tableSize = partySize > 10 ? 20 : ((partySize % 2 === 0) ? partySize : partySize + 1);
       const date = i.format('YYYY-MM-DD');
@@ -136,7 +136,7 @@ const generateData = () => {
 
   console.log('generate restaurants/reservations: time before seed', moment().format('LTS'));
 
-  let i = 4000000;
+  let i = 2000000;
 
   function write() {
     let ok = true;
@@ -153,7 +153,7 @@ const generateData = () => {
         reservationsWriter.write(reservationsData, 'utf8');
 
         console.log('generate restaurants/reservations: time after seed', moment().format('LTS'));
-      } else if (i % 1000 === 0) {
+      } else if (i % 10000 === 0) {
         // these restaurants have no bookings
         const restaurantData = createRestaurant();
         restaurantsWriter.write(restaurantData[0], 'utf8');
