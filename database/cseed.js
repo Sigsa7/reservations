@@ -71,7 +71,7 @@ const createSeating = function (restaurant, number) {
 
 const createReservation = function (restaurantID, openTime, closeTime, intervalTime, largestTable, number) {
   let output = [];
-  const start = moment('2019-08-01');
+  const start = moment();
   const stop = start.clone().add(3, 'months');
 
   if (number < 800000) {
