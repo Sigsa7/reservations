@@ -17,7 +17,29 @@ app.use(morgan('dev'));
 app.use(bodyParser.json());
 
 app.get('/booking/reserved/:restaurantID', (req, res) => {
+  const { restaurantID } = req.params;
+  let { dateTime } = req.body;
+  const { partySize } = req.body;
+  const tableSize = partySize > 10 ? 20 : (partySize % 2 === 0 ? partySize : partySize + 1);
+  dateTime = moment(dateTime).format('YYYY-MM-DD HH:mm');
+  const start = moment(dateTime).clone().subtract(2, 'hours').format('YYYY-MM-DD HH:mm');
+  const end = moment(dateTime).clone().add(2, 'hours').format('YYYY-MM-DD HH:mm');
+  let number;
 
+  pool.query('SELECT number_of_tables FROM seating WHERE restaurant_id = $1 AND table_size = $2',
+    [restaurantID, tableSize], (err, data) => {
+      if (err) throw err;
+      number = data.rows[0].number_of_tables;
+
+      pool.query('SELECT date_time, count(*) FROM reservations WHERE restaurant_id = $1 AND date_time >= $2 AND date_time <= $3 AND table_size = $4 GROUP BY date_time',
+        [restaurantID, start, end, tableSize], (err, rezData) => {
+          if (err) throw err;
+
+          const filtered = rezData.rows.filter(element => number - element.count < 1);
+          const reserved = filtered.map(element => element.date_time);
+          res.send(reserved);
+        });
+    });
 });
 
 app.get('/booking/count/:restaurantID', (req, res) => {
