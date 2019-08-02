@@ -10,8 +10,21 @@ const moment = require('moment');
 const minuteOptions = ['15', '30', '45', '00'];
 
 function checkReserved(userContext, events, done) {
-  // generate data with Faker:
-  const restaurantID = faker.random.number({ min: 1500000, max: 2000000 });
+
+  const restaurantOptions = [
+    faker.random.number({ min: 1, max: 200000 }),
+    faker.random.number({ min: 1, max: 200000 }),
+    faker.random.number({ min: 1, max: 200000 }),
+    faker.random.number({ min: 1, max: 200000 }),
+    faker.random.number({ min: 1, max: 200000 }),
+    faker.random.number({ min: 1, max: 200000 }),
+    faker.random.number({ min: 1, max: 200000 }),
+    faker.random.number({ min: 1, max: 200000 }),
+    faker.random.number({ min: 200001, max: 2000000 }),
+    faker.random.number({ min: 200001, max: 2000000 }),
+  ];
+
+  const restaurantID = restaurantOptions[Math.floor(Math.random() * 10)];
   const partySize = faker.random.number({ min: 1, max: 20 });
   const date = moment.utc().add(faker.random.number({ min: 1, max: 90 }), 'days').format('YYYY-MM-DD');
   const time = `${Math.ceil(Math.random() * 23)}:${minuteOptions[Math.floor(Math.random() * 4)]}:00`;
@@ -26,7 +39,7 @@ function checkReserved(userContext, events, done) {
 
 function createReservation(userContext, events, done) {
   // generate restaurant ID
-  const restaurantID = faker.random.number({ min: 1500000, max: 2000000 });
+  const restaurantID = faker.random.number({ min: 1, max: 2000000 });
   
   // generate date
   const date = moment.utc().add(faker.random.number({ min: 1, max: 90 }), 'days').format('YYYY-MM-DD');
