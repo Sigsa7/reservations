@@ -4,8 +4,8 @@ config:
   ensure:
     p95: 2000
   phases:
-    - duration: 10 # last 1 seconds with 10 virtual users arriving every second
-      arrivalRate: 2
+    - duration: 1 # last 1 seconds with 10 virtual users arriving every second
+      arrivalRate: 10
   defaults:
     headers:
       x-my-service-auth: '987401838271002188298567'
@@ -19,7 +19,7 @@ scenarios:
           json:
             partySize: "{{ partySize }}"
             dateTime: "{{ dateTime }}"
-    count: 1000
+    count: 100
   - name: "View reserved dates"
     flow:
     - function: "checkReserved"
@@ -29,4 +29,4 @@ scenarios:
           json:
             partySize: "{{ partySize }}"
             dateTime: "{{ dateTime }}"
-    count: 1000
+    count: 100
