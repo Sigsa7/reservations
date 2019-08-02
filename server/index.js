@@ -4,35 +4,59 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const path = require('path');
+const http2 = require('http2');
+const fs = require('fs');
 const expressStaticGzip = require('express-static-gzip');
+const cluster = require('cluster');
 const db = require('../database/controllers/dbControllers.js');
-
-const app = express();
 
 const port = 3005;
 
 
-app.use(morgan('dev'));
-app.use(bodyParser.json());
+// const options = {
+//   key: fs.readFileSync('./certificates/server.key'),
+//   cert: fs.readFileSync('./certificates/server.crt'),
+//   requestCert: false,
+//   rejectUnauthorized: false,
+// };
 
-app.use(express.static(path.join(__dirname, '/../public/')));
-app.use('/:restaurant_id', express.static(path.join(__dirname, '/../public/')));
-app.use('/', expressStaticGzip('/../public/', {
-  enableBrotli: true,
-  orderPreference: ['br', 'gz'],
-  setHeaders: function (res, path) {
-    res.setHeader("Cache-Control", "public, max-age=31536000");
-  },
-}));
+// const server = http2.createSecureServer(options);
 
-app.get('/booking/reserved/:restaurantID', db.cacheReservedDates, db.getReservedDates);
+// server.on('stream', (server, headers) => {
+//   stream.respond({
+//     'content-type': 'text/html',
+//     ':status': 200, 
+//   });
+//   stream.end('Hello World');
+// });
 
-app.get('/booking/count/:restaurantID', db.getBookingCount);
+if (cluster.isMaster) {
+  const cpuCount = require('os').cpus().length;
+  for (let i = 0; i < cpuCount; i += 1) {
+    cluster.fork();
+  }
+} else {
+  const app = express();
+  // app.use(morgan('dev'));  
+  app.use(bodyParser.json());
 
-app.post('/booking/:restaurantID', db.createReservation);
+  app.use(express.static(path.join(__dirname, '/../public/')));
 
-app.put('/booking/:reservationID', db.updateReservation);
+  app.use('/:restaurant_id', express.static(path.join(__dirname, '/../public/')));
 
-app.delete('/booking/:reservationID', db.deleteReservation);
+  app.get('/booking/reserved/:restaurantID', db.cacheReservedDates, db.cacheTables, db.getReservedDates);
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+  app.get('/booking/count/:restaurantID', db.getBookingCount);
+
+  app.post('/booking/create/:restaurantID', db.createReservation);
+
+  app.put('/booking/update/:reservationID', db.updateReservation);
+
+  app.delete('/booking/cancel/:reservationID', db.deleteReservation);
+
+  app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+  // server.listen(port, 'localhost', () => {
+  //   console.log(`Server running at https://localhost:${port}/ !!!`);
+  // });
+}
