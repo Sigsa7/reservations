@@ -17,7 +17,8 @@ CREATE TABLE reservations (
   restaurant_id INTEGER,
   date_time TIMESTAMPTZ,
   party_size SMALLINT,
-  table_size SMALLINT
+  table_size SMALLINT,
+  create_at date
 );
 
 CREATE TABLE seating (
