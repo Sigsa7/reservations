@@ -23,8 +23,8 @@ const restaurantOptions = [
 ];
 
 export const options = {
-  vus: 150,
-  duration: '10m',
+  vus: 200,
+  duration: '2m',
 };
 
 export default function () {
@@ -54,14 +54,14 @@ export default function () {
 
   http.request(
     'GET',
-    `http://localhost:3005/booking/reserved/${getRestaurantID}`,
+    `http://18.217.25.48:3005/booking/reserved/${getRestaurantID}`,
     getBody,
     { headers: { 'Content-Type': 'application/json' } }
   );
 
   http.request(
     'POST',
-    `http://localhost:3005/booking/create/${postRestaurantID}`,
+    `http://18.217.25.48:3005/booking/create/${postRestaurantID}`,
     postBody,
     { headers: { 'Content-Type': 'application/json' } }
   );

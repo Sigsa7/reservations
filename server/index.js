@@ -12,24 +12,6 @@ const db = require('../database/controllers/dbControllers.js');
 
 const port = 3005;
 
-
-// const options = {
-//   key: fs.readFileSync('./certificates/server.key'),
-//   cert: fs.readFileSync('./certificates/server.crt'),
-//   requestCert: false,
-//   rejectUnauthorized: false,
-// };
-
-// const server = http2.createSecureServer(options);
-
-// server.on('stream', (server, headers) => {
-//   stream.respond({
-//     'content-type': 'text/html',
-//     ':status': 200, 
-//   });
-//   stream.end('Hello World');
-// });
-
 if (cluster.isMaster) {
   const cpuCount = require('os').cpus().length;
   for (let i = 0; i < cpuCount; i += 1) {
@@ -40,9 +22,11 @@ if (cluster.isMaster) {
   // app.use(morgan('dev'));  
   app.use(bodyParser.json());
 
-  app.use(express.static(path.join(__dirname, '/../public/')));
+  app.get('/loaderio-91277fcdc9ccc679e5045a1834abfdf3', (req, res) => {
+    res.sendFile('/home/ec2-user/res_repository/loader/loaderio-91277fcdc9ccc679e5045a1834abfdf3.txt');
+  });
 
-  app.use('/:restaurant_id', express.static(path.join(__dirname, '/../public/')));
+  app.use('/booking/:restaurant_id', express.static(path.join(__dirname, '/../public/')));
 
   app.get('/booking/reserved/:restaurantID', db.cacheReservedDates, db.cacheTables, db.getReservedDates);
 
@@ -56,7 +40,4 @@ if (cluster.isMaster) {
 
   app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
-  // server.listen(port, 'localhost', () => {
-  //   console.log(`Server running at https://localhost:${port}/ !!!`);
-  // });
 }
