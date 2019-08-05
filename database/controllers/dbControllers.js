@@ -5,13 +5,15 @@ const redis = require('redis');
 const client = redis.createClient();
 
 client.on('connect', function() {
-  console.log('connected');
+  console.log('connected to redis');
 });
 
 const pool = new Pool({
+  user: 'katherinewang',
+  password: 'password',
+  host: '3.17.73.162',
   database: 'sigsa_reservations2',
 });
-
 
 const cacheReservedDates = (req, res, next) => {
   const { restaurantID } = req.params;
