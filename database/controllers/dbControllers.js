@@ -17,13 +17,15 @@ const pool = new Pool({
 
 const cacheReservedDates = (req, res, next) => {
   const { restaurantID } = req.params;
-  const { dateTime, partySize } = req.body;
+  const { dateTime, partySize } = req.query;
+
   const tableSize = partySize > 10 ? 20 : (partySize % 2 === 0 ? partySize : partySize + 1);
   const reservationKey = `${restaurantID}-${dateTime}-${tableSize}`;
   client.get(reservationKey, (err, data) => {
     if (err) throw err;
 
     if (data !== null) {
+      console.log('sending from cache');
       res.send(JSON.parse(data));
     } else {
       next();
@@ -33,8 +35,8 @@ const cacheReservedDates = (req, res, next) => {
 
 const cacheTables = (req, res, next) => {
   const { restaurantID } = req.params;
-  let { dateTime } = req.body;
-  const { partySize } = req.body;
+  let { dateTime } = req.query;
+  const { partySize } = req.query;
   const tableSize = partySize > 10 ? 20 : (partySize % 2 === 0 ? partySize : partySize + 1);
   const tableKey = `${restaurantID}-${tableSize}`;
   const reservationKey = `${restaurantID}-${dateTime}-${tableSize}`;
@@ -70,8 +72,8 @@ const cacheTables = (req, res, next) => {
 
 const getReservedDates = (req, res) => {
   const { restaurantID } = req.params;
-  let { dateTime } = req.body;
-  const { partySize } = req.body;
+  let { dateTime } = req.query;
+  const { partySize } = req.query;
   const tableSize = partySize > 10 ? 20 : (partySize % 2 === 0 ? partySize : partySize + 1);
   const tableKey = `${restaurantID}-${tableSize}`;
   const reservationKey = `${restaurantID}-${dateTime}-${tableSize}`;

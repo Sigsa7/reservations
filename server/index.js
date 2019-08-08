@@ -12,32 +12,25 @@ const db = require('../database/controllers/dbControllers.js');
 
 const port = 3005;
 
-if (cluster.isMaster) {
-  const cpuCount = require('os').cpus().length;
-  for (let i = 0; i < cpuCount; i += 1) {
-    cluster.fork();
-  }
-} else {
-  const app = express();
-  // app.use(morgan('dev'));  
-  app.use(bodyParser.json());
+const app = express();
+app.use(morgan('dev'));  
+app.use(bodyParser.json());
 
-  app.get('/loaderio-91277fcdc9ccc679e5045a1834abfdf3', (req, res) => {
-    res.sendFile('/home/ec2-user/res_repository/loader/loaderio-91277fcdc9ccc679e5045a1834abfdf3.txt');
-  });
+app.get('/loaderio-7262d4d88a26f54c067d448224a265bd', (req, res) => {
+  res.sendFile('/home/ec2-user/repo/loader/lloaderio-7262d4d88a26f54c067d448224a265bd.txt');
+});
 
-  app.use('/booking/:restaurant_id', express.static(path.join(__dirname, '/../public/')));
+app.get('/booking/reserved/:restaurantID', db.cacheReservedDates, db.cacheTables, db.getReservedDates);
 
-  app.get('/booking/reserved/:restaurantID', db.cacheReservedDates, db.cacheTables, db.getReservedDates);
+app.get('/booking/count/:restaurantID', db.getBookingCount);
 
-  app.get('/booking/count/:restaurantID', db.getBookingCount);
+app.post('/booking/create/:restaurantID', db.createReservation);
 
-  app.post('/booking/create/:restaurantID', db.createReservation);
+app.put('/booking/update/:reservationID', db.updateReservation);
 
-  app.put('/booking/update/:reservationID', db.updateReservation);
+app.delete('/booking/cancel/:reservationID', db.deleteReservation);
 
-  app.delete('/booking/cancel/:reservationID', db.deleteReservation);
+app.use('/booking/:restaurant_id', express.static(path.join(__dirname, '/../public/')));
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
-  app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
-}
